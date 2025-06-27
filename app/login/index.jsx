@@ -2,7 +2,7 @@ import React, { useCallback } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import Colors from "../../constants/Colors";
 import * as WebBrowser from "expo-web-browser";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { useOAuth } from "@clerk/clerk-expo";
 import * as Linking from "expo-linking";
 
@@ -23,6 +23,7 @@ WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
   useWarmUpBrowser();
+  const router = useRouter();
   const { startOAuthFlow } = useOAuth({ strategy: "oauth_google" });
   const onPress = useCallback(async () => {
     try {
@@ -30,15 +31,20 @@ export default function LoginScreen() {
         await startOAuthFlow({
           redirectUrl: Linking.createURL("/home", { scheme: "myapp" }),
         });
-      if (createSessionId) {
-        // If createSessionId is returned, it means the user is signing up
-        console.log("User signed up successfully");
+      if (createSessionId && setActive) {
+        await setActive({ session: createSessionId });
+        router.replace("/home");
+      } else if (setActive && signIn?.createdSessionId) {
+        await setActive({ session: signIn.createdSessionId });
+        router.replace("/home");
       } else {
+        // fallback: just go home
+        router.replace("/home");
       }
     } catch (error) {
       console.error("Error during OAuth flow:", error);
     }
-  }, []);
+  }, [router, startOAuthFlow]);
   return (
     <View>
       <Image
@@ -61,7 +67,7 @@ export default function LoginScreen() {
       >
         <Text
           style={{
-            fontFamily: "Baloo2-extraBold",
+            fontFamily: "Baloo2-ExtraBold",
             fontSize: 32,
             textAlign: "center",
           }}

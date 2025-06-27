@@ -20,7 +20,7 @@ const tokenCache = {
       return null;  
   }
 },
-  async setToken(key, value){
+  async saveToken(key, value){
     try {
       await SecureStore.setItemAsync(key, value);
       console.log(`${key} was set \n`);
@@ -48,6 +48,7 @@ export default function RootLayout() {
             headerShown: false,
           }}
           />
+        <Stack.Screen name="pet/[id]" options={{ title: 'Pet Details', headerShown: true }} />
       </Stack>
     </ClerkProvider>
   );
